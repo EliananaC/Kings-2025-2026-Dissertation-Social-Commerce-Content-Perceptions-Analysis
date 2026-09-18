@@ -1,0 +1,10 @@
+---
+title: "social_commerce_content_perceptions_analysis"
+author: "Eliana"
+date: "2026-09-18"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```

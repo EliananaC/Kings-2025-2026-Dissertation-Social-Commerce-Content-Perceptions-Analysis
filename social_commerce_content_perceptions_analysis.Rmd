@@ -213,3 +213,105 @@ write_csv(
   "../data/02_Cleaned_Analytical_Data.csv"
 )
 ```
+# 5. Sample Description
+```{r}
+# Age distribution
+age_summary <- d_analysis %>%
+  count(AgeGroup) %>%
+  mutate(Percent = n / sum(n) * 100)
+
+age_summary
+
+# Gender distribution
+gender_summary <- d_analysis %>%
+  count(Gender) %>%
+  mutate(Percent = n / sum(n) * 100)
+
+gender_summary
+
+# Previous purchase following creator recommendations
+purchase_summary <- d_analysis %>%
+  count(PriorPurchase) %>%
+  mutate(Percent = n / sum(n) * 100)
+
+purchase_summary
+
+# Facial moisturiser familiarity
+familiarity_summary <- d_analysis %>%
+  summarise(
+    N = sum(!is.na(Familiarity)),
+    Mean = mean(Familiarity, na.rm = TRUE),
+    SD = sd(Familiarity, na.rm = TRUE),
+    Median = median(Familiarity, na.rm = TRUE)
+  )
+
+familiarity_summary
+```
+The sample was primarily aged 18–34 (68.7%) and 61.8% were women. Most participants (66.7%) had previously purchased a product following a creator or influencer recommendation. Familiarity with facial moisturiser products was moderate (M = 4.16, SD = 1.79).
+
+# 6. Measurement Quality
+```{r}
+# Internal consistency reliability
+alpha_CT <- psych::alpha(
+  d_analysis[, c("CT1", "CT2", "CT3", "CT4")]
+)
+
+alpha_PT <- psych::alpha(
+  d_analysis[, c("PT1", "PT2", "PT3", "PT4")]
+)
+
+alpha_PKA <- psych::alpha(
+  d_analysis[, c("PKA1", "PKA2", "PKA3", "PKA4")]
+)
+
+alpha_CV <- psych::alpha(
+  d_analysis[, c("MC_CV1", "MC_CV2")]
+)
+
+alpha_ID <- psych::alpha(
+  d_analysis[, c("MC_ID1", "MC_ID2", "MC_ID3")]
+)
+
+alpha_CT$total$raw_alpha
+alpha_PT$total$raw_alpha
+alpha_PKA$total$raw_alpha
+alpha_CV$total$raw_alpha
+alpha_ID$total$raw_alpha
+
+
+# Descriptive statistics for principal study variables
+scale_descriptives <- d_analysis %>%
+  select(CT, PT, PKA) %>%
+  summarise(
+    across(
+      everything(),
+      list(
+        N = ~sum(!is.na(.)),
+        M = ~mean(., na.rm = TRUE),
+        SD = ~sd(., na.rm = TRUE),
+        Median = ~median(., na.rm = TRUE),
+        Min = ~min(., na.rm = TRUE),
+        Max = ~max(., na.rm = TRUE)
+      )
+    )
+  ) %>%
+  pivot_longer(
+    everything(),
+    names_to = c("Variable", ".value"),
+    names_pattern = "(.*)_(N|Median|Min|Max|SD|M)$"
+  )
+
+scale_descriptives
+
+# Pearson correlations with significance tests
+cor_results <- psych::corr.test(
+  d_analysis[, c("CT", "PT", "PKA")],
+  use = "pairwise",
+  method = "pearson",
+  adjust = "none"
+)
+
+round(cor_results$r, 2)
+round(cor_results$p, 3)
+```
+All multi-item measures showed strong internal consistency, with Cronbach’s α ranging from .882 to .937. Content Trust averaged 4.27 (SD = 1.62), Platform Trust 3.92 (SD = 1.57), and Persuasion Knowledge Awareness 6.18 (SD = 1.08). Content Trust was positively associated with Platform Trust, r = .62, p < .001, but was not significantly associated with PKA, r = .07, p = .257. Platform Trust showed a weak positive association with PKA, r = .13, p = .048.

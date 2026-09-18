@@ -688,3 +688,136 @@ h4_bootstrap_summary
 Diagnostic inspection of the moderated mediation outcome model showed no substantial residual pattern or evidence of undue influence. Residuals followed the expected distribution closely across the central range, with some deviation in the tails.
 
 H4 was not supported. The interaction between Persuasion Knowledge Awareness and Information Diagnosticity was not significant, B = −0.22, SE = 0.19, t(241) = −1.19, p = .235. The conditional indirect effect of CV on Content Trust through PKA was not significant at either low ID, B = 0.058, 95% CI [−0.004, 0.162], or high ID, B = −0.014, 95% CI [−0.131, 0.091]. The index of moderated mediation was also not significant, B = −0.073, 95% CI [−0.247, 0.038].
+
+## 8.4 Secondary Outcome and Trust-Target Comparison
+
+### 8.4.1 Platform Trust
+```{r}
+# Two-way ANOVA for Platform Trust
+pt_model <- aov(
+  PT ~ CV * ID, 
+  data = d_analysis
+  )
+
+summary(pt_model)
+
+# Platform Trust by experimental condition
+pt_descriptives <- d_analysis %>%
+  group_by(CV, ID) %>%
+  summarise(
+    n = n(),
+    M = mean(PT),
+    SD = sd(PT),
+    .groups = "drop"
+  )
+
+pt_descriptives
+
+# Effect sizes for Platform Trust ANOVA
+eta_squared(
+  pt_model,
+  partial = TRUE
+)
+
+# Outcome-model diagnostics
+
+qqnorm(residuals(pt_model))
+qqline(residuals(pt_model))
+
+fligner.test(
+  PT ~ Condition,
+  data = d_analysis
+)
+```
+Residuals followed the expected distribution reasonably closely across the central range, with some deviation in the tails. The Fligner–Killeen test indicated no evidence of unequal variances across experimental conditions, χ²(3) = 3.13, p = .372.
+Exploratory analysis of Platform Trust showed no significant main effect of Commercial Visibility, F(1, 242) = 1.82, p = .179, ηₚ² = .007. Information Diagnosticity had a significant positive effect on Platform Trust, F(1, 242) = 5.86, p = .016, ηₚ² = .02. The CV × ID interaction was not significant, F(1, 242) = 1.66, p = .199, ηₚ² = .007.
+```{r}
+# Figure 2: Platform Trust by CV and ID
+pt_plot_data <- d_analysis %>%
+  group_by(CV, ID) %>%
+  summarise(
+    M = mean(PT),
+    SE = sd(PT) / sqrt(n()),
+    .groups = "drop"
+  )
+
+ggplot(
+  pt_plot_data,
+  aes(
+    x = ID,
+    y = M,
+    group = CV,
+    linetype = CV,
+    shape = CV
+  )
+) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(
+      ymin = M - SE,
+      ymax = M + SE
+    ),
+    width = 0.08
+  ) +
+  labs(
+    title = "Platform Trust Across Experimental Conditions",
+    x = "Information Diagnosticity",
+    y = "Mean Platform Trust",
+    linetype = "Commercial Visibility",
+    shape = "Commercial Visibility"
+  ) +
+  ylim(1, 7) +
+  theme_minimal()
+```
+### 8.4.2 Comparison of Content Trust and Platform Trust
+```{r}
+# Reshape Content Trust and Platform Trust into long format
+trust_long <- d_analysis %>%
+  select(
+    ResponseId,
+    CV,
+    ID,
+    CT,
+    PT
+  ) %>%
+  pivot_longer(
+    cols = c(CT, PT),
+    names_to = "TrustTarget",
+    values_to = "Trust"
+  ) %>%
+  mutate(
+    Participant = factor(ResponseId),
+    TrustTarget = factor(
+      TrustTarget,
+      levels = c("CT", "PT"),
+      labels = c(
+        "Content Trust",
+        "Platform Trust"
+      )
+    )
+  )
+
+# Mixed ANOVA: Trust Target is within-subject;
+# CV and ID are between-subject factors
+trust_target_model <- aov(
+  Trust ~ TrustTarget * CV * ID +
+    Error(Participant / TrustTarget),
+  data = trust_long
+)
+
+summary(trust_target_model)
+
+# Obtain partial eta-squared for trust-target interaction effects
+
+trust_difference_model <- aov(
+  I(CT - PT) ~ CV * ID,
+  data = d_analysis
+)
+
+eta_squared(
+  trust_difference_model,
+  partial = TRUE
+)
+```
+A mixed ANOVA was conducted to directly compare the effects of Commercial Visibility and Information Diagnosticity across Content Trust and Platform Trust. There was a significant main effect of Trust Target, F(1, 242) = 16.17, p < .001, with overall Content Trust higher than Platform Trust. The Trust Target × CV interaction was not significant, F(1, 242) = 1.45, p = .230, ηₚ² = .006. In contrast, the Trust Target × ID interaction was significant, F(1, 242) = 7.77, p = .006, ηₚ² = .031, indicating that the positive effect of Information Diagnosticity differed across the two trust targets and was more pronounced for Content Trust. The three-way Trust Target × CV × ID interaction was not significant, F(1, 242) = 1.54, p = .216, ηₚ² = .006.

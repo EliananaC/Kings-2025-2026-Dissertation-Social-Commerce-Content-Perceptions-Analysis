@@ -821,3 +821,46 @@ eta_squared(
 )
 ```
 A mixed ANOVA was conducted to directly compare the effects of Commercial Visibility and Information Diagnosticity across Content Trust and Platform Trust. There was a significant main effect of Trust Target, F(1, 242) = 16.17, p < .001, with overall Content Trust higher than Platform Trust. The Trust Target × CV interaction was not significant, F(1, 242) = 1.45, p = .230, ηₚ² = .006. In contrast, the Trust Target × ID interaction was significant, F(1, 242) = 7.77, p = .006, ηₚ² = .031, indicating that the positive effect of Information Diagnosticity differed across the two trust targets and was more pronounced for Content Trust. The three-way Trust Target × CV × ID interaction was not significant, F(1, 242) = 1.54, p = .216, ηₚ² = .006.
+
+## 8.5 Hypothesis Summary
+```{r}
+hypothesis_table <- data.frame(
+  Hypothesis = c("H1", "H2", "H3", "H4"),
+
+  Prediction = c(
+    "Higher CV will reduce Content Trust",
+    "Higher ID will increase Content Trust",
+    "CV will negatively affect Content Trust through PKA",
+    "ID will moderate the indirect effect of CV on Content Trust through PKA, such that the negative indirect effect will be weaker when ID is high"
+  ),
+
+  `Key result` = c(
+    "F(1, 242) = 0.09, p = .769, partial eta-squared < .001",
+    "F(1, 242) = 23.60, p < .001, partial eta-squared = .09",
+    "Indirect effect = 0.028, 95% CI [-0.029, 0.106]",
+    "Index = -0.073, 95% CI [-0.247, 0.038]"
+  ),
+
+  `Key inference` = c(
+    "Commercial visibility did not reduce Content Trust",
+    "Information diagnosticity produced a positive effect on Content Trust",
+    "CV increased PKA, but PKA did not mediate the effect on Content Trust",
+    "Information diagnosticity did not moderate the indirect CV-PKA-Content Trust pathway"
+  ),
+
+  Conclusion = c(
+    "Not supported",
+    "Supported",
+    "Not supported",
+    "Not supported"
+  ),
+
+  check.names = FALSE
+)
+
+knitr::kable(
+  hypothesis_table,
+  caption = "Summary of Hypothesis Testing"
+)
+```
+The trust-target comparison additionally showed that the positive effect of Information Diagnosticity was significantly stronger for Content Trust than for Platform Trust, whereas the effect of Commercial Visibility did not differ significantly between the two trust outcomes.

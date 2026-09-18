@@ -371,3 +371,90 @@ cohens_d(
   )
 ```
 Both manipulations were successful. High CV produced higher perceived commercial visibility than low CV, F(1, 242) = 29.50, p < .001, ηₚ² = .11, |d| = 0.69. High ID produced higher perceived information diagnosticity than low ID, F(1, 242) = 61.55, p < .001, ηₚ² = .20, |d| = 1.00. Neither manipulation showed a significant main effect on the non-target manipulation check, and neither CV × ID interaction was significant.
+
+# 8. Findings
+
+## 8.1 H1 and H2: Factorial Effects on Content Trust
+```{r}
+# Two-way ANOVA for Content Trust
+ct_model <- aov(
+  CT ~ CV * ID, 
+  data = d_analysis
+  )
+
+summary(ct_model)
+
+# Content Trust by experimental condition
+ct_descriptives <- d_analysis %>%
+  group_by(CV, ID) %>%
+  summarise(
+    n = n(),
+    M = mean(CT),
+    SD = sd(CT),
+    .groups = "drop"
+  )
+
+ct_descriptives
+
+# Effect sizes for Content Trust ANOVA
+eta_squared(
+  ct_model,
+  partial = TRUE
+)
+
+# Model diagnostics
+qqnorm(residuals(ct_model))
+qqline(residuals(ct_model))
+
+fligner.test(
+  CT ~ Condition,
+  data = d_analysis
+)
+```
+Residuals showed close alignment with the expected distribution across the central range, with modest tail deviations. The Fligner–Killeen test indicated homogeneous variances across experimental conditions, χ²(3) = 1.48, p = .687.
+
+H1 was not supported. Commercial visibility had no significant effect on Content Trust, F(1, 242) = 0.09, p = .769, ηₚ² < .001. Mean Content Trust was similar under low CV (M = 4.24) and high CV (M = 4.30).
+
+H2 was supported. Information diagnosticity had a significant positive effect on Content Trust, F(1, 242) = 23.60, p < .001, ηₚ² = .09. Content Trust was higher under high ID (M = 4.76) than low ID (M = 3.80).
+
+The CV × ID interaction was not significant, F(1, 242) = 0.04, p = .841, ηₚ² < .001, indicating that the effect of Commercial Visibility on Content Trust did not differ significantly between low- and high-ID conditions.
+
+```{r}
+# Figure 1: Content Trust by CV and ID
+ct_plot_data <- d_analysis %>%
+  group_by(CV, ID) %>%
+  summarise(
+    M = mean(CT),
+    SE = sd(CT) / sqrt(n()),
+    .groups = "drop"
+  )
+
+ggplot(
+  ct_plot_data,
+  aes(
+    x = ID,
+    y = M,
+    group = CV,
+    linetype = CV,
+    shape = CV
+  )
+) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(
+      ymin = M - SE,
+      ymax = M + SE
+    ),
+    width = 0.08
+  ) +
+  labs(
+    title = "Content Trust Across Experimental Conditions",
+    x = "Information Diagnosticity",
+    y = "Mean Content Trust",
+    linetype = "Commercial Visibility",
+    shape = "Commercial Visibility"
+  ) +
+  ylim(1, 7) +
+  theme_minimal()
+```

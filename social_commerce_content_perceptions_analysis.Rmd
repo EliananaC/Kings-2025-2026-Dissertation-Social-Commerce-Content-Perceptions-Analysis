@@ -55,3 +55,161 @@ d_raw %>%
   ) %>%
   head(5)
 ```
+# 3. Data Screening and Final Analytical Sample
+```{r}
+# Remove Qualtrics metadata rows and survey previews
+d_formal <- d_raw %>%
+  filter(
+    Status != "Survey Preview",
+    Status != "Response Type",
+    !grepl("ImportId", Status, fixed = TRUE)
+  )
+
+# Retain completed responses
+d_complete <- d_formal %>%
+  filter(
+    Progress == 100,
+    Finished == TRUE
+  )
+
+# Apply consent and eligibility criteria
+d_eligible <- d_complete %>%
+  filter(
+     `Consent Form` == "I agree",
+    S1 == "Yes",
+    S2 == "Yes",
+    S3 != "I don't use social media",
+    S4 == "Yes"
+  )
+
+# Apply attention-check criterion
+d_clean <- d_eligible %>%
+  filter(
+    `Attention Check` == "Strongly agree"
+    )
+
+# Screening summary
+screening_summary <- data.frame(
+  Stage = c(
+    "Formal responses",
+    "Completed responses",
+    "Eligible responses",
+    "Final analytical sample"
+  ),
+  N = c(
+    nrow(d_formal),
+    nrow(d_complete),
+    nrow(d_eligible),
+    nrow(d_clean)
+  )
+)
+
+screening_summary
+
+# Final condition allocation
+d_clean %>%
+  count(Condition)
+```
+A total of 298 formal responses were identified, all of which were complete. Eligibility screening retained 277 responses, and 246 responses remained after application of the attention-check criterion. The final sample was approximately balanced across the four experimental conditions: HH (n = 62), HL (n = 63), LH (n = 60), and LL (n = 61).
+
+# 4. Variable Coding and Scale Construction
+```{r}
+# Convert agreement-scale responses to numeric values
+likert_to_num <- function(x) {
+  recode(
+    x,
+    "Strongly disagree" = 1,
+    "Disagree" = 2,
+    "Somewhat disagree" = 3,
+    "Neither agree nor disagree" = 4,
+    "Somewhat agree" = 5,
+    "Agree" = 6,
+    "Strongly agree" = 7
+  )
+}
+
+# Create analysis-ready variables
+d_analysis <- d_clean %>%
+  rename(
+    MC_CV1 = `MC-CV1`,
+    MC_CV2 = `MC-CV2`,
+    MC_ID1 = `MC-ID1`,
+    MC_ID2 = `MC-ID2`,
+    MC_ID3 = `MC-ID3`,
+    AgeGroup = `DEM 1`,
+    Gender = `DEM 2`,
+    PriorPurchase = `DEM 3`,
+    Familiarity = `DEM 4`
+  ) %>%
+  mutate(
+    across(
+      c(
+        CT1, CT2, CT3, CT4,
+        PT1, PT2, PT3, PT4,
+        PKA1, PKA2, PKA3, PKA4,
+        MC_CV1, MC_CV2,
+        MC_ID1, MC_ID2, MC_ID3
+      ),
+      likert_to_num
+    ),
+
+    Familiarity = recode(
+      Familiarity,
+      "Not familiar at all" = 1,
+      "Slightly familiar" = 2,
+      "Somewhat familiar" = 3,
+      "Moderately familiar" = 4,
+      "Quite familiar" = 5,
+      "Very familiar" = 6,
+      "Extremely familiar" = 7
+    ),
+
+    CV_num = ifelse(Condition %in% c("HH", "HL"), 1, 0),
+    ID_num = ifelse(Condition %in% c("HH", "LH"), 1, 0),
+
+    CV = factor(
+      CV_num,
+      levels = c(0, 1),
+      labels = c("Low", "High")
+    ),
+
+    ID = factor(
+      ID_num,
+      levels = c(0, 1),
+      labels = c("Low", "High")
+    ),
+
+    Condition = factor(
+      Condition,
+      levels = c("LL", "LH", "HL", "HH")
+    ),
+
+    AgeGroup = factor(
+      AgeGroup,
+      levels = c(
+        "18-24",
+        "25-34",
+        "35-44",
+        "45 or above",
+        "Prefer not to say"
+      )
+    ),
+
+    Gender = factor(Gender),
+    PriorPurchase = factor(PriorPurchase),
+
+    CT = rowMeans(cbind(CT1, CT2, CT3, CT4)),
+    PT = rowMeans(cbind(PT1, PT2, PT3, PT4)),
+    PKA = rowMeans(cbind(PKA1, PKA2, PKA3, PKA4)),
+    CV_check = rowMeans(cbind(MC_CV1, MC_CV2)),
+    ID_check = rowMeans(cbind(MC_ID1, MC_ID2, MC_ID3)),
+
+    # Mean-centred mediator for moderated mediation
+    PKA_c = PKA - mean(PKA, na.rm = TRUE)
+  )
+
+write_csv(
+  d_analysis,
+  "../data/02_Cleaned_Analytical_Data.csv"
+)
+```

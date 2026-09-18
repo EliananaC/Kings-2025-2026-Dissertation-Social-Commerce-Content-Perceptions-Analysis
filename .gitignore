@@ -50,3 +50,6 @@ rsconnect/
 
 # R Project files
 *.RProj
+
+# knit draft word files
+social_commerce_content_perceptions_analysis.docx

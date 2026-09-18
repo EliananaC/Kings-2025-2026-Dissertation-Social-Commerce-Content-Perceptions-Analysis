@@ -568,3 +568,123 @@ h3_bootstrap_summary
 Diagnostic plots indicated no substantial systematic pattern in the residuals. The Q–Q plot showed close alignment across the central distribution with some deviation in the tails, while Cook’s distances indicated no observations with undue influence on the outcome model.
 
 H3 was not supported. Persuasion Knowledge Awareness averaged 6.01 (SD = 1.24) under low CV and 6.34 (SD = 0.88) under high CV. Higher commercial visibility significantly increased PKA, B = 0.33, SE = 0.14, t(244) = 2.41, p = .017. However, PKA did not significantly predict Content Trust when CV and ID were included in the outcome model, B = 0.08, SE = 0.09, t(242) = 0.91, p = .363. The indirect effect of CV on Content Trust through PKA was not significant, B = 0.028, 95% CI [-0.029, 0.106].
+
+## 8.3 H4: Moderated Mediation by Information Diagnosticity
+```{r}
+# Outcome model with PKA × ID interaction
+ct_modmed_model <- lm(
+  CT ~ CV + PKA_c * ID,
+  data = d_analysis
+)
+
+summary(ct_modmed_model)
+
+# Outcome-model diagnostics
+plot(
+  ct_modmed_model,
+  which = 1
+)
+
+plot(
+  ct_modmed_model,
+  which = 2
+)
+
+plot(
+  ct_modmed_model,
+  which = 4
+)
+
+# Original-sample path estimates
+a_h4 <- coef(pka_model)["CVHigh"]
+
+b_low_h4 <- coef(
+  ct_modmed_model
+)["PKA_c"]
+
+interaction_h4 <- coef(
+  ct_modmed_model
+)["PKA_c:IDHigh"]
+
+b_high_h4 <- b_low_h4 + interaction_h4
+
+# Original-sample conditional indirect effects
+h4_indirect_low_original <- a_h4 * b_low_h4
+h4_indirect_high_original <- a_h4 * b_high_h4
+
+# Original-sample index of moderated mediation
+h4_index_original <- a_h4 * interaction_h4
+
+# Bootstrap function for H4 moderated mediation
+bootstrap_h4 <- function(data) {
+  
+sample_data <- data[sample(nrow(data), replace = TRUE), ]
+  
+  # Re-centre PKA within each bootstrap sample
+  sample_data <- sample_data %>%
+    mutate(
+      PKA_c = PKA - mean(PKA, na.rm = TRUE)
+    )
+  
+  # a path: CV -> PKA
+  a_model <- lm(PKA ~ CV, data = sample_data)
+  
+  # second-stage moderation model
+  y_model <- lm(CT ~ CV + PKA_c * ID, data = sample_data)
+  
+  a <- coef(a_model)["CVHigh"]
+  b_low <- coef(y_model)["PKA_c"]
+  interaction <- coef(y_model)["PKA_c:IDHigh"]
+  
+  b_high <- b_low + interaction
+  
+  indirect_low <- a * b_low
+  indirect_high <- a * b_high
+  
+  index_modmed <- a * interaction
+  
+  c(
+    indirect_low = indirect_low,
+    indirect_high = indirect_high,
+    index_modmed = index_modmed
+  )
+}
+
+set.seed(123)
+
+bootstrap_h4_results <- replicate(
+  5000,
+  bootstrap_h4(d_analysis)
+)
+
+bootstrap_h4_results <- t(bootstrap_h4_results) %>%
+  as.data.frame()
+
+h4_bootstrap_summary <- data.frame(
+  Effect = c(
+    "Indirect effect at Low ID",
+    "Indirect effect at High ID",
+    "Index of moderated mediation"
+  ),
+  Estimate = c(
+    h4_indirect_low_original,
+    h4_indirect_high_original,
+    h4_index_original
+  ),
+  Lower_95 = c(
+    quantile(bootstrap_h4_results$indirect_low, 0.025, na.rm = TRUE),
+    quantile(bootstrap_h4_results$indirect_high, 0.025, na.rm = TRUE),
+    quantile(bootstrap_h4_results$index_modmed, 0.025, na.rm = TRUE)
+  ),
+  Upper_95 = c(
+    quantile(bootstrap_h4_results$indirect_low, 0.975, na.rm = TRUE),
+    quantile(bootstrap_h4_results$indirect_high, 0.975, na.rm = TRUE),
+    quantile(bootstrap_h4_results$index_modmed, 0.975, na.rm = TRUE)
+  )
+)
+
+h4_bootstrap_summary
+```
+Diagnostic inspection of the moderated mediation outcome model showed no substantial residual pattern or evidence of undue influence. Residuals followed the expected distribution closely across the central range, with some deviation in the tails.
+
+H4 was not supported. The interaction between Persuasion Knowledge Awareness and Information Diagnosticity was not significant, B = −0.22, SE = 0.19, t(241) = −1.19, p = .235. The conditional indirect effect of CV on Content Trust through PKA was not significant at either low ID, B = 0.058, 95% CI [−0.004, 0.162], or high ID, B = −0.014, 95% CI [−0.131, 0.091]. The index of moderated mediation was also not significant, B = −0.073, 95% CI [−0.247, 0.038].

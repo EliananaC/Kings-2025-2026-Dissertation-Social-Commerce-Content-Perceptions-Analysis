@@ -4,7 +4,54 @@ author: "Eliana"
 date: "2026-09-18"
 output: word_document
 ---
-
+# 0. Setup
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(readr)
+library(ggplot2)
+library(tidyr)
+library(psych)
+library(effectsize)
+
+options(scipen = 999)
+
+d_raw <- read_csv('../data/01_raw_final_data.csv')
+```
+# 1. Research Questions and Hypotheses
+
+## Main Research Question
+How do commercial visibility and information diagnosticity influence Content Trust in creator-led social commerce?
+
+## Sub-Research Question 1
+Does persuasion knowledge awareness mediate the relationship between commercial visibility and Content Trust, and is this indirect relationship moderated by information diagnosticity?
+
+## Sub-Research Question 2
+Do commercial visibility and information diagnosticity affect Content Trust and Platform Trust differently?
+
+## Hypotheses
+H1: Higher CV will lead to lower Content Trust.
+
+H2: Higher ID will lead to higher Content Trust.
+
+H3: The negative effect of CV on Content Trust will be mediated by PKA.
+
+H4: ID will moderate the indirect effect of CV on Content Trust via PKA, such that the negative indirect effect will be weaker when ID is high.
+
+# 2. Raw Data Overview
+```{r}
+dim(d_raw)
+names(d_raw)
+d_raw %>%
+  select(
+    StartDate,
+    Status,
+    Progress,
+    Finished,
+    ResponseId,
+    DistributionChannel,
+    Condition
+  ) %>%
+  head(5)
 ```

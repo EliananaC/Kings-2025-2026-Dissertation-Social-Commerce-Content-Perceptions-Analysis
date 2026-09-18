@@ -315,3 +315,59 @@ round(cor_results$r, 2)
 round(cor_results$p, 3)
 ```
 All multi-item measures showed strong internal consistency, with Cronbach’s α ranging from .882 to .937. Content Trust averaged 4.27 (SD = 1.62), Platform Trust 3.92 (SD = 1.57), and Persuasion Knowledge Awareness 6.18 (SD = 1.08). Content Trust was positively associated with Platform Trust, r = .62, p < .001, but was not significantly associated with PKA, r = .07, p = .257. Platform Trust showed a weak positive association with PKA, r = .13, p = .048.
+
+# 7. Manipulation Checks
+```{r}
+# Descriptive statistics by experimental condition
+manipulation_descriptives <- d_analysis %>%
+  group_by(CV, ID) %>%
+  summarise(
+    n = n(),
+    CV_check_M = mean(CV_check),
+    CV_check_SD = sd(CV_check),
+    ID_check_M = mean(ID_check),
+    ID_check_SD = sd(ID_check),
+    .groups = "drop"
+  )
+
+manipulation_descriptives
+
+# Commercial Visibility manipulation check
+cv_check_model <- aov(
+  CV_check ~ CV * ID, 
+  data = d_analysis
+  )
+
+summary(cv_check_model)
+
+# Information Diagnosticity manipulation check
+id_check_model <- aov(
+  ID_check ~ CV * ID, 
+  data = d_analysis
+  )
+
+summary(id_check_model)
+
+# ANOVA effect sizes
+eta_squared(
+  cv_check_model,
+  partial = TRUE
+)
+
+eta_squared(
+  id_check_model,
+  partial = TRUE
+)
+
+# Descriptive effect sizes for target manipulations
+cohens_d(
+  CV_check ~ CV, 
+  data = d_analysis
+  )
+
+cohens_d(
+  ID_check ~ ID, 
+  data = d_analysis
+  )
+```
+Both manipulations were successful. High CV produced higher perceived commercial visibility than low CV, F(1, 242) = 29.50, p < .001, ηₚ² = .11, |d| = 0.69. High ID produced higher perceived information diagnosticity than low ID, F(1, 242) = 61.55, p < .001, ηₚ² = .20, |d| = 1.00. Neither manipulation showed a significant main effect on the non-target manipulation check, and neither CV × ID interaction was significant.

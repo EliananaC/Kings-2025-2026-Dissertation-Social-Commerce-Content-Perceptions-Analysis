@@ -53,3 +53,5 @@ rsconnect/
 
 # knit draft word files
 social_commerce_content_perceptions_analysis.docx
+
+.DS_Store

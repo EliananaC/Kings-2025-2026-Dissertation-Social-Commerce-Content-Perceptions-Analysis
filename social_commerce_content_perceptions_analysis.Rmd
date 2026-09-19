@@ -480,7 +480,43 @@ pka_descriptives <- d_analysis %>%
   )
 
 pka_descriptives
+```
+```{r}
+# Figure 2: Persuasion Knowledge Awareness by Commercial Visibility
 
+ggplot(
+  d_analysis,
+  aes(
+    x = CV,
+    y = PKA
+  )
+) +
+  geom_violin(
+    trim = TRUE,
+    alpha = 0.35
+  ) +
+  geom_boxplot(
+    width = 0.14,
+    outlier.shape = NA
+  ) +
+  geom_jitter(
+    width = 0.08,
+    height = 0,
+    alpha = 0.22,
+    size = 1
+  ) +
+  labs(
+    title = "Persuasion Knowledge Awareness by Commercial Visibility",
+    x = "Commercial Visibility",
+    y = "Persuasion Knowledge Awareness"
+  ) +
+  coord_cartesian(
+    ylim = c(1, 7)
+  ) +
+  theme_minimal()
+```
+Figure 2 shows that PKA scores were concentrated toward the upper end of the scale in both conditions, with a modest upward shift under high Commercial Visibility.
+```{r}
 # Outcome model: effects of CV, ID and PKA on Content Trust
 ct_mediation_model <- lm(
   CT ~ CV + ID + PKA,
@@ -567,7 +603,7 @@ h3_bootstrap_summary
 ```
 Diagnostic plots indicated no substantial systematic pattern in the residuals. The Q–Q plot showed close alignment across the central distribution with some deviation in the tails, while Cook’s distances indicated no observations with undue influence on the outcome model.
 
-H3 was not supported. Persuasion Knowledge Awareness averaged 6.01 (SD = 1.24) under low CV and 6.34 (SD = 0.88) under high CV. Higher commercial visibility significantly increased PKA, B = 0.33, SE = 0.14, t(244) = 2.41, p = .017. However, PKA did not significantly predict Content Trust when CV and ID were included in the outcome model, B = 0.08, SE = 0.09, t(242) = 0.91, p = .363. The indirect effect of CV on Content Trust through PKA was not significant, B = 0.028, 95% CI [-0.029, 0.106].
+H3 was not supported. Persuasion Knowledge Awareness averaged 6.01 (SD = 1.24) under low CV and 6.34 (SD = 0.88) under high CV. As illustrated in Figure 2, PKA scores were shifted upward under high Commercial Visibility. Higher commercial visibility significantly increased PKA, B = 0.33, SE = 0.14, t(244) = 2.41, p = .017. However, PKA did not significantly predict Content Trust when CV and ID were included in the outcome model, B = 0.08, SE = 0.09, t(242) = 0.91, p = .363. The indirect effect of CV on Content Trust through PKA was not significant, B = 0.028, 95% CI [-0.029, 0.106].
 
 ## 8.3 H4: Moderated Mediation by Information Diagnosticity
 ```{r}
@@ -732,7 +768,7 @@ fligner.test(
 Residuals followed the expected distribution reasonably closely across the central range, with some deviation in the tails. The Fligner–Killeen test indicated no evidence of unequal variances across experimental conditions, χ²(3) = 3.13, p = .372.
 Exploratory analysis of Platform Trust showed no significant main effect of Commercial Visibility, F(1, 242) = 1.82, p = .179, ηₚ² = .007. Information Diagnosticity had a significant positive effect on Platform Trust, F(1, 242) = 5.86, p = .016, ηₚ² = .02. The CV × ID interaction was not significant, F(1, 242) = 1.66, p = .199, ηₚ² = .007.
 ```{r}
-# Figure 2: Platform Trust by CV and ID
+# Figure 3: Platform Trust by CV and ID
 pt_plot_data <- d_analysis %>%
   group_by(CV, ID) %>%
   summarise(

@@ -421,6 +421,7 @@ The CV × ID interaction was not significant, F(1, 242) = 0.04, p = .841, ηₚ�
 
 ```{r}
 # Figure 1: Content Trust by CV and ID
+
 ct_plot_data <- d_analysis %>%
   group_by(CV, ID) %>%
   summarise(
@@ -429,7 +430,7 @@ ct_plot_data <- d_analysis %>%
     .groups = "drop"
   )
 
-ggplot(
+figure1_ct <- ggplot(
   ct_plot_data,
   aes(
     x = ID,
@@ -457,6 +458,17 @@ ggplot(
   ) +
   ylim(1, 7) +
   theme_minimal()
+
+figure1_ct
+
+ggsave(
+  filename = "../figures/figure1_content_trust.png",
+  plot = figure1_ct,
+  width = 7,
+  height = 5,
+  units = "in",
+  dpi = 300
+)
 ```
 ## 8.2 H3: Mediation via Persuasion Knowledge Awareness
 ```{r}
@@ -484,7 +496,7 @@ pka_descriptives
 ```{r}
 # Figure 2: Persuasion Knowledge Awareness by Commercial Visibility
 
-ggplot(
+figure2_pka <- ggplot(
   d_analysis,
   aes(
     x = CV,
@@ -506,7 +518,7 @@ ggplot(
     size = 1
   ) +
   labs(
-    title = "Persuasion Knowledge Awareness by Commercial Visibility",
+    title = "PKA by Commercial Visibility",
     x = "Commercial Visibility",
     y = "Persuasion Knowledge Awareness"
   ) +
@@ -514,6 +526,17 @@ ggplot(
     ylim = c(1, 7)
   ) +
   theme_minimal()
+
+figure2_pka
+
+ggsave(
+  filename = "../figures/figure2_pka_by_cv.png",
+  plot = figure2_pka,
+  width = 7,
+  height = 5,
+  units = "in",
+  dpi = 300
+)
 ```
 Figure 2 shows that PKA scores were concentrated toward the upper end of the scale in both conditions, with a modest upward shift under high Commercial Visibility.
 ```{r}
@@ -769,6 +792,7 @@ Residuals followed the expected distribution reasonably closely across the centr
 Exploratory analysis of Platform Trust showed no significant main effect of Commercial Visibility, F(1, 242) = 1.82, p = .179, ηₚ² = .007. Information Diagnosticity had a significant positive effect on Platform Trust, F(1, 242) = 5.86, p = .016, ηₚ² = .02. The CV × ID interaction was not significant, F(1, 242) = 1.66, p = .199, ηₚ² = .007.
 ```{r}
 # Figure 3: Platform Trust by CV and ID
+
 pt_plot_data <- d_analysis %>%
   group_by(CV, ID) %>%
   summarise(
@@ -777,7 +801,7 @@ pt_plot_data <- d_analysis %>%
     .groups = "drop"
   )
 
-ggplot(
+figure3_pt <- ggplot(
   pt_plot_data,
   aes(
     x = ID,
@@ -805,6 +829,17 @@ ggplot(
   ) +
   ylim(1, 7) +
   theme_minimal()
+
+figure3_pt
+
+ggsave(
+  filename = "../figures/figure3_platform_trust.png",
+  plot = figure3_pt,
+  width = 7,
+  height = 5,
+  units = "in",
+  dpi = 300
+)
 ```
 ### 8.4.2 Comparison of Content Trust and Platform Trust
 ```{r}

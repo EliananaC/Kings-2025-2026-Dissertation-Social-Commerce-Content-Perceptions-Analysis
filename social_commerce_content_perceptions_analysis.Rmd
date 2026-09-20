@@ -22,22 +22,22 @@ d_raw <- read_csv('../data/01_raw_final_data.csv')
 # 1. Research Questions and Hypotheses
 
 ## Main Research Question
-How do commercial visibility and information diagnosticity influence Content Trust in creator-led social commerce?
+How do Commercial Visibility and Information Diagnosticity influence Content Trust in creator-led social commerce?
 
 ## Sub-Research Question 1
-Does persuasion knowledge awareness mediate the relationship between commercial visibility and Content Trust, and is this indirect relationship moderated by information diagnosticity?
+Does Persuasion Knowledge Awareness mediate the relationship between Commercial Visibility and Content Trust, and is this indirect relationship moderated by Information Diagnosticity?
 
 ## Sub-Research Question 2
-Do commercial visibility and information diagnosticity affect Content Trust and Platform Trust differently?
+Do Commercial Visibility and Information Diagnosticity affect Content Trust and Platform Trust differently?
 
 ## Hypotheses
-H1: Higher CV will lead to lower Content Trust.
+H1: Higher Commercial Visibility will lead to lower Content Trust.
 
-H2: Higher ID will lead to higher Content Trust.
+H2: Higher Information Diagnosticity will lead to higher Content Trust.
 
-H3: The negative effect of CV on Content Trust will be mediated by PKA.
+H3: The negative effect of Commercial Visibility on Content Trust will be mediated by Persuasion Knowledge Awareness.
 
-H4: ID will moderate the indirect effect of CV on Content Trust via PKA, such that the negative indirect effect will be weaker when ID is high.
+H4: Information Diagnosticity will moderate the indirect effect of Commercial Visibility on Content Trust through Persuasion Knowledge Awareness, such that the negative indirect effect will be weaker when Information Diagnosticity is high.
 
 # 2. Raw Data Overview
 ```{r}
@@ -425,8 +425,11 @@ The CV × ID interaction was not significant, F(1, 242) = 0.04, p = .841, ηₚ�
 ct_plot_data <- d_analysis %>%
   group_by(CV, ID) %>%
   summarise(
-    M = mean(CT),
-    SE = sd(CT) / sqrt(n()),
+    n = n(),
+    M = mean(CT, na.rm = TRUE),
+    SD = sd(CT, na.rm = TRUE),
+    SE = SD / sqrt(n),
+    CI95 = qt(.975, df = n - 1) * SE,
     .groups = "drop"
   )
 
@@ -444,13 +447,12 @@ figure1_ct <- ggplot(
   geom_point(size = 3) +
   geom_errorbar(
     aes(
-      ymin = M - SE,
-      ymax = M + SE
+      ymin = M - CI95,
+      ymax = M + CI95
     ),
     width = 0.08
   ) +
   labs(
-    title = "Content Trust Across Experimental Conditions",
     x = "Information Diagnosticity",
     y = "Mean Content Trust",
     linetype = "Commercial Visibility",
@@ -518,7 +520,6 @@ figure2_pka <- ggplot(
     size = 1
   ) +
   labs(
-    title = "PKA by Commercial Visibility",
     x = "Commercial Visibility",
     y = "Persuasion Knowledge Awareness"
   ) +
@@ -789,58 +790,8 @@ fligner.test(
 )
 ```
 Residuals followed the expected distribution reasonably closely across the central range, with some deviation in the tails. The Fligner–Killeen test indicated no evidence of unequal variances across experimental conditions, χ²(3) = 3.13, p = .372.
-Exploratory analysis of Platform Trust showed no significant main effect of Commercial Visibility, F(1, 242) = 1.82, p = .179, ηₚ² = .007. Information Diagnosticity had a significant positive effect on Platform Trust, F(1, 242) = 5.86, p = .016, ηₚ² = .02. The CV × ID interaction was not significant, F(1, 242) = 1.66, p = .199, ηₚ² = .007.
-```{r}
-# Figure 3: Platform Trust by CV and ID
+As a secondary outcome, Platform Trust showed no significant main effect of Commercial Visibility, F(1, 242) = 1.82, p = .179, ηₚ² = .007. Information Diagnosticity had a significant positive effect on Platform Trust, F(1, 242) = 5.86, p = .016, ηₚ² = .02. The CV × ID interaction was not significant, F(1, 242) = 1.66, p = .199, ηₚ² = .007.
 
-pt_plot_data <- d_analysis %>%
-  group_by(CV, ID) %>%
-  summarise(
-    M = mean(PT),
-    SE = sd(PT) / sqrt(n()),
-    .groups = "drop"
-  )
-
-figure3_pt <- ggplot(
-  pt_plot_data,
-  aes(
-    x = ID,
-    y = M,
-    group = CV,
-    linetype = CV,
-    shape = CV
-  )
-) +
-  geom_line(linewidth = 0.8) +
-  geom_point(size = 3) +
-  geom_errorbar(
-    aes(
-      ymin = M - SE,
-      ymax = M + SE
-    ),
-    width = 0.08
-  ) +
-  labs(
-    title = "Platform Trust Across Experimental Conditions",
-    x = "Information Diagnosticity",
-    y = "Mean Platform Trust",
-    linetype = "Commercial Visibility",
-    shape = "Commercial Visibility"
-  ) +
-  ylim(1, 7) +
-  theme_minimal()
-
-figure3_pt
-
-ggsave(
-  filename = "../figures/figure3_platform_trust.png",
-  plot = figure3_pt,
-  width = 7,
-  height = 5,
-  units = "in",
-  dpi = 300
-)
-```
 ### 8.4.2 Comparison of Content Trust and Platform Trust
 ```{r}
 # Reshape Content Trust and Platform Trust into long format
@@ -891,6 +842,61 @@ eta_squared(
   partial = TRUE
 )
 ```
+```{r}
+# Figure 3: Content Trust and Platform Trust by Information Diagnosticity
+
+trust_target_plot_data <- trust_long %>%
+  group_by(ID, TrustTarget) %>%
+  summarise(
+    n = n(),
+    M = mean(Trust, na.rm = TRUE),
+    SD = sd(Trust, na.rm = TRUE),
+    SE = SD / sqrt(n),
+    CI95 = qt(.975, df = n - 1) * SE,
+    .groups = "drop"
+  )
+
+figure3_trust_target <- ggplot(
+  trust_target_plot_data,
+  aes(
+    x = ID,
+    y = M,
+    group = TrustTarget,
+    linetype = TrustTarget,
+    shape = TrustTarget
+  )
+) +
+  geom_line(linewidth = 0.8) +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(
+      ymin = M - CI95,
+      ymax = M + CI95
+    ),
+    width = 0.08
+  ) +
+  labs(
+    x = "Information Diagnosticity",
+    y = "Mean Trust",
+    linetype = "Trust Target",
+    shape = "Trust Target"
+  ) +
+  ylim(1, 7) +
+  theme_minimal()
+
+figure3_trust_target
+
+ggsave(
+  filename = "../figures/figure3_trust_target_by_id.png",
+  plot = figure3_trust_target,
+  width = 7,
+  height = 5,
+  units = "in",
+  dpi = 300
+)
+```
+
+
 A mixed ANOVA was conducted to directly compare the effects of Commercial Visibility and Information Diagnosticity across Content Trust and Platform Trust. There was a significant main effect of Trust Target, F(1, 242) = 16.17, p < .001, with overall Content Trust higher than Platform Trust. The Trust Target × CV interaction was not significant, F(1, 242) = 1.45, p = .230, ηₚ² = .006. In contrast, the Trust Target × ID interaction was significant, F(1, 242) = 7.77, p = .006, ηₚ² = .031, indicating that the positive effect of Information Diagnosticity differed across the two trust targets and was more pronounced for Content Trust. The three-way Trust Target × CV × ID interaction was not significant, F(1, 242) = 1.54, p = .216, ηₚ² = .006.
 
 ## 8.5 Hypothesis Summary
